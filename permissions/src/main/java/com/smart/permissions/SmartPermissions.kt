@@ -99,22 +99,39 @@ object SmartPermissions {
 }
 
 /**
- * 针对 Activity 的 DSL 扩展函数。
- * DSL extension function for Activity.
- * @param block 开发者定义的权限结果回调逻辑 / Callback logic defined by developer.
+ * 针对 Activity 的 DSL 扩展函数（使用注解模式）。
+ * DSL extension function for Activity (Annotation mode).
  */
 fun ComponentActivity.runWithPermissions(block: PermissionResultBuilder.() -> Unit) {
     val builder = PermissionResultBuilder().apply(block)
-    // 移除 ?: 默认成功逻辑。未初始化时 getEngine 内部会抛出异常告知开发者。
     SmartPermissions.getEngine(this)?.runWithAnnotation(builder, this)
 }
 
 /**
- * 针对 Fragment 的 DSL 扩展函数。
- * DSL extension function for Fragment.
- * @param block 开发者定义的权限结果回调逻辑 / Callback logic defined by developer.
+ * 针对 Activity 的 DSL 扩展函数（直接传参模式）。
+ * DSL extension function for Activity (Direct parameters mode).
+ * @param permissions 直接传入需要申请的权限列表
+ */
+fun ComponentActivity.runWithPermissions(vararg permissions: String, block: PermissionResultBuilder.() -> Unit) {
+    val builder = PermissionResultBuilder().apply(block)
+    SmartPermissions.getEngine(this)?.requestInternal(permissions.toList(), builder)
+}
+
+/**
+ * 针对 Fragment 的 DSL 扩展函数（使用注解模式）。
+ * DSL extension function for Fragment (Annotation mode).
  */
 fun Fragment.runWithPermissions(block: PermissionResultBuilder.() -> Unit) {
     val builder = PermissionResultBuilder().apply(block)
     SmartPermissions.getEngine(this)?.runWithAnnotation(builder, this)
+}
+
+/**
+ * 针对 Fragment 的 DSL 扩展函数（直接传参模式）。
+ * DSL extension function for Fragment (Direct parameters mode).
+ * @param permissions 直接传入需要申请的权限列表
+ */
+fun Fragment.runWithPermissions(vararg permissions: String, block: PermissionResultBuilder.() -> Unit) {
+    val builder = PermissionResultBuilder().apply(block)
+    SmartPermissions.getEngine(this)?.requestInternal(permissions.toList(), builder)
 }

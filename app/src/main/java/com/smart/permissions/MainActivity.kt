@@ -26,7 +26,26 @@ class MainActivity : ComponentActivity() {
                 Button(onClick = { startWork() }) {
                     Text("调用受限方法 (系统弹窗)")
                 }
-                Button(onClick = { openStorage() }) {
+
+                Button(onClick = {
+                    runWithPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE) {
+                        // 成功回调
+                        onGranted {
+                            Log.d("SmartPermissions", "存储权限已获得，开始执行业务")
+                        }
+
+                        // 普通拒绝（用户点了一次拒绝）
+                        onDenied { deniedPermissions ->
+                            Log.d("SmartPermissions", "用户拒绝了: $deniedPermissions")
+                        }
+
+                        // 永久拒绝（用户勾选了不再询问）
+                        onPermanentlyDenied { deniedPermissions ->
+                            // 这里你可以弹出自定义的对话框，引导用户去设置
+                            Log.d("SmartPermissions", "用户永久拒绝了: $deniedPermissions")
+                        }
+                    }
+                }) {
                     Text("调用受限方法 (存储)")
                 }
             }
@@ -39,37 +58,9 @@ class MainActivity : ComponentActivity() {
             Log.d("SmartPermissions", "系统弹窗权限已获得，开始执行业务")
         }
 
-        onDenied { denied ->
-            Log.d("SmartPermissions", "用户拒绝了: $denied")
-        }
-
-        onPermanentlyDenied { denied ->
-            Log.d("SmartPermissions", "用户永久拒绝了: $denied")
-        }
-
         onSpecialPermission { specials ->
             // 包含了特殊权限（如悬浮窗），需要你引导跳转
-            // specials: ["android.permission.SYSTEM_ALERT_WINDOW"]
-            Log.d("SmartPermissions", "特殊权限，需手动开启")
-        }
-    }
-
-    @Permissions([Manifest.permission.WRITE_EXTERNAL_STORAGE])
-    fun openStorage() = runWithPermissions {
-        // 成功回调
-        onGranted {
-            Log.d("SmartPermissions", "存储权限已获得，开始执行业务")
-        }
-
-        // 普通拒绝（用户点了一次拒绝）
-        onDenied { deniedPermissions ->
-            Log.d("SmartPermissions", "用户拒绝了: $deniedPermissions")
-        }
-
-        // 永久拒绝（用户勾选了不再询问）
-        onPermanentlyDenied { deniedPermissions ->
-            // 这里你可以弹出自定义的对话框，引导用户去设置
-            Log.d("SmartPermissions", "用户永久拒绝了: $deniedPermissions")
+            Log.d("SmartPermissions", "${specials}特殊权限，需手动开启")
         }
     }
 }
