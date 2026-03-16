@@ -170,9 +170,8 @@ internal class PermissionEngine(private val host: Any) {
             method.isAnnotationPresent(Permissions::class.java) && 
             stackTrace.any { it.methodName == method.name }
         }
-
-        if (annotatedMethod != null) {
-            val annotation = annotatedMethod.getAnnotation(Permissions::class.java)
+        val annotation = annotatedMethod?.getAnnotation(Permissions::class.java)
+        if (annotation != null) {
             requestInternal(annotation.value, builder)
         } else {
             builder.getOnGranted()?.invoke()

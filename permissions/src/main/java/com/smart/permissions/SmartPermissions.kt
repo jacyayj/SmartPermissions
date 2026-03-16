@@ -17,6 +17,9 @@ import java.util.WeakHashMap
  * Core design: Achieve "non-invasive" permission injection through lifecycle callbacks.
  */
 object SmartPermissions {
+    // 标记库是否已执行初始化 / Flag indicating whether the library has been initialized.
+    private var isInitialized = false
+
     // 内存安全容器：使用 WeakHashMap 存储引擎，随宿主销毁自动释放。
     // Memory-safe containers: Automatically released when hosts are destroyed.
     private val activityEngines = WeakHashMap<Activity, PermissionEngine>()
@@ -32,6 +35,8 @@ object SmartPermissions {
      * @param application 全局上下文 / Global application instance.
      */
     fun init(application: Application) {
+        if (isInitialized) return
+        isInitialized = true
         application.registerActivityLifecycleCallbacks(object : Application.ActivityLifecycleCallbacks {
             override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
                 // 1. 处理 Activity (支持 ComponentActivity 及 AppCompatActivity)
@@ -61,7 +66,6 @@ object SmartPermissions {
             override fun onActivityDestroyed(activity: Activity) {
                 activityEngines.remove(activity)
             }
-            // 其余生命周期回调保持静默 / Keeping other lifecycle callbacks silent.
             override fun onActivityStarted(activity: Activity) {}
             override fun onActivityResumed(activity: Activity) {}
             override fun onActivityPaused(activity: Activity) {}
@@ -70,8 +74,28 @@ object SmartPermissions {
         })
     }
 
-    internal fun getEngine(activity: Activity): PermissionEngine? = activityEngines[activity]
-    internal fun getEngine(fragment: Fragment): PermissionEngine? = fragmentEngines[fragment]
+    /**
+     * 内部检查初始化状态 / Internal check for initialization state.
+     * 如果未初始化则抛出异常，防止静默失败导致权限绕过假象。
+     */
+    private fun checkInitialized() {
+        if (!isInitialized) {
+            throw IllegalStateException(
+                "SmartPermissions is not initialized. \n" +
+                "Please call 'SmartPermissions.init(this)' in your Application class before using 'runWithPermissions'."
+            )
+        }
+    }
+
+    internal fun getEngine(activity: Activity): PermissionEngine? {
+        checkInitialized()
+        return activityEngines[activity]
+    }
+
+    internal fun getEngine(fragment: Fragment): PermissionEngine? {
+        checkInitialized()
+        return fragmentEngines[fragment]
+    }
 }
 
 /**
@@ -81,8 +105,8 @@ object SmartPermissions {
  */
 fun ComponentActivity.runWithPermissions(block: PermissionResultBuilder.() -> Unit) {
     val builder = PermissionResultBuilder().apply(block)
-    SmartPermissions.getEngine(this)?.runWithAnnotation(builder, this) 
-        ?: builder.getOnGranted()?.invoke()
+    // 移除 ?: 默认成功逻辑。未初始化时 getEngine 内部会抛出异常告知开发者。
+    SmartPermissions.getEngine(this)?.runWithAnnotation(builder, this)
 }
 
 /**
@@ -92,6 +116,5 @@ fun ComponentActivity.runWithPermissions(block: PermissionResultBuilder.() -> Un
  */
 fun Fragment.runWithPermissions(block: PermissionResultBuilder.() -> Unit) {
     val builder = PermissionResultBuilder().apply(block)
-    SmartPermissions.getEngine(this)?.runWithAnnotation(builder, this) 
-        ?: builder.getOnGranted()?.invoke()
+    SmartPermissions.getEngine(this)?.runWithAnnotation(builder, this)
 }
