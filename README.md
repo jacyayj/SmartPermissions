@@ -1,4 +1,4 @@
-# SmartPermissions
+# SmartPermissions[![](https://jitpack.io/v/jacyayj/SmartPermissions.svg)](https://jitpack.io/#jacyayj/SmartPermissions)
 
 一个基于 Kotlin 注解与 DSL 设计的 Android 权限请求框架。支持 **零侵入** 初始化、自动版本适配、以及类与方法级别的权限拦截。
 
