@@ -60,7 +60,7 @@ repositories {
 接着，在 App 模块的 `build.gradle.kts` 中添加依赖：
 ```kotlin
 dependencies {
-    implementation("com.github.jacyayj:SmartConnectivity:1.0.0")
+    implementation("com.github.jacyayj:SmartPermissions:1.0.1")
 }
 ```
 
