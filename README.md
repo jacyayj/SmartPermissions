@@ -48,19 +48,35 @@
 
 ## 📖 使用指南
 
-### 1. 初始化
+### 1. 添加依赖
+
+首先，在项目根目录的 `settings.gradle.kts` 或 `build.gradle` 中添加 JitPack 仓库：
+```kotlin
+repositories {
+    maven { url = uri("https://jitpack.io") }
+}
+```
+
+接着，在 App 模块的 `build.gradle.kts` 中添加依赖：
+```kotlin
+dependencies {
+    implementation("com.github.jacyayj:SmartConnectivity:1.0.0")
+}
+```
+
+### 2. 初始化
 在自定义的 `Application` 中初始化：
 ```kotlin
 SmartPermissions.init(this)
 ```
 
-### 2. 类级别使用 (进入即申请)
+### 3. 类级别使用 (进入即申请)
 ```kotlin
 @Permissions([Manifest.permission.CAMERA])
 class MainActivity : ComponentActivity() { }
 ```
 
-### 3. 直接传参使用 (无注解模式 - 推荐 🚀)
+### 4. 直接传参使用 (无注解模式 - 推荐 🚀)
 无需在方法上声明注解，直接在逻辑代码中传入权限，**性能更好且更灵活**：
 ```kotlin
 fun openAlbum() {
@@ -72,7 +88,7 @@ fun openAlbum() {
 }
 ```
 
-### 4. 方法级别使用 (注解模式)
+### 5. 方法级别使用 (注解模式)
 ```kotlin
 @Permissions([Manifest.permission.RECORD_AUDIO])
 fun startRecord() = runWithPermissions {
@@ -80,7 +96,7 @@ fun startRecord() = runWithPermissions {
 }
 ```
 
-### 5. 特殊权限处理 (DSL)
+### 6. 特殊权限处理 (DSL)
 ```kotlin
 runWithPermissions(Manifest.permission.SYSTEM_ALERT_WINDOW) {
     onSpecialPermission { specials ->
